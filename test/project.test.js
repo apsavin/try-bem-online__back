@@ -6,8 +6,8 @@ var vows = require('vows'),
     config = require('../lib/configurator').process(require('../config/config'));
 
 vows.describe('try-bem-online__back').addBatch({
-    'projects module': {
-        'generate method': {
+    'module project': {
+        'method create': {
             topic: function () {
                 var callback = this.callback;
                 project.create(function (err, projectId) {
@@ -25,6 +25,88 @@ vows.describe('try-bem-online__back').addBatch({
 
             'should create project directory': function (result) {
                 assert(fs.existsSync(path.join(config.tmpPath, result.projectId)));
+            }
+        },
+        'method get, empty path': {
+            topic: function () {
+                var callback = this.callback;
+                project.create(function (err, projectId) {
+                    project.get(projectId, '', function (err, structure) {
+                        callback(null, {err: err, structure: structure})
+                    });
+                });
+            },
+
+            'should be ok': function (result) {
+                assert.equal(result.err, null);
+            },
+
+            'should return structure with r, w flags and content field': function (result) {
+                assert.strictEqual(typeof result.structure === 'object', true);
+                assert.strictEqual(result.structure.r, true);
+                assert.strictEqual(result.structure.w, false);
+                assert.strictEqual(Array.isArray(result.structure.content), true);
+                assert.strictEqual(result.structure.content.length, 6);
+            },
+
+            'should contain r .bem in content as first folder': function (result) {
+                var firstFolder = result.structure.content[0];
+                assert(firstFolder);
+                assert.strictEqual(firstFolder.r, true);
+                assert.strictEqual(firstFolder.w, false);
+                assert.strictEqual(firstFolder.content, '.bem');
+            }
+        },
+        'method get, dir path': {
+            topic: function () {
+                var callback = this.callback;
+                project.create(function (err, projectId) {
+                    project.get(projectId, 'desktop.blocks', function (err, structure) {
+                        callback(null, {err: err, structure: structure})
+                    });
+                });
+            },
+
+            'should be ok': function (result) {
+                assert.equal(result.err, null);
+            },
+
+            'should return structure with r, w flags and content field': function (result) {
+                assert.strictEqual(typeof result.structure === 'object', true);
+                assert.strictEqual(result.structure.r, true);
+                assert.strictEqual(result.structure.w, true);
+                assert.strictEqual(Array.isArray(result.structure.content), true);
+                assert.strictEqual(result.structure.content.length, 1);
+            },
+
+            'should contain r .bem in content as only folder': function (result) {
+                var firstFolder = result.structure.content[0];
+                assert(firstFolder);
+                assert.strictEqual(firstFolder.r, true);
+                assert.strictEqual(firstFolder.w, false);
+                assert.strictEqual(firstFolder.content, '.bem');
+            }
+        },
+        'method get, file path': {
+            topic: function () {
+                var callback = this.callback;
+                project.create(function (err, projectId) {
+                    project.get(projectId, 'desktop.bundles/index/index.bemjson.js', function (err, structure) {
+                        callback(null, {err: err, structure: structure})
+                    });
+                });
+            },
+
+            'should be ok': function (result) {
+                assert.equal(result.err, null);
+            },
+
+            'should return structure with r, w flags and content field': function (result) {
+                assert.strictEqual(typeof result.structure === 'object', true);
+                assert.strictEqual(result.structure.r, true);
+                assert.strictEqual(result.structure.w, true);
+                assert.strictEqual(typeof result.structure.content, 'string');
+                assert(result.structure.content.length);
             }
         }
     }

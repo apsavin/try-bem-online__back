@@ -7,13 +7,14 @@ module.exports = {
             '.gitignore',
             '.idea',
             'README.md',
-            'favicon.ico',
-            'package.json'
+            'favicon.ico'
         ],
         symlinked: [
             '.bem',
             'libs',
             'node_modules'
-        ]
+        ],
+        r: /^(\.bem|desktop\.b|package\.json)/,
+        w: /^desktop\.b((?!(\/\.bem\/)).)*$/
     }
 };
