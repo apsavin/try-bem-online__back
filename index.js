@@ -14,7 +14,7 @@ app.post('/clone', function (req, res) {
 });
 
 var onGetProjectFileRequest = function (req, res) {
-    project.get(req.params.project, req.params.path, function (err, data) {
+    project.get(req.params[0], req.params[1], function (err, data) {
         if (err) {
             res.send(500, err);
         }
@@ -22,8 +22,8 @@ var onGetProjectFileRequest = function (req, res) {
     });
 };
 
-app.get('/clones/:project', onGetProjectFileRequest);
+app.get(/^\/clones\/([\w-]+)$/, onGetProjectFileRequest);
 
-app.get('/clones/:project/:path', onGetProjectFileRequest);
+app.get(/^\/clones\/([\w-]+)\/([\w\.\-\/]*)$/, onGetProjectFileRequest);
 
 app.listen(3001);

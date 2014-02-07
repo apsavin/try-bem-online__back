@@ -15,6 +15,6 @@ module.exports = {
             'node_modules'
         ],
         r: /^(\.bem|desktop\.b|package\.json)/,
-        w: /^desktop\.b((?!(\/\.bem\/)).)*$/
+        w: /^desktop\.b((?!(\/\.bem)).)*$/
     }
 };
