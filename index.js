@@ -16,7 +16,12 @@ app.post('/clone', function (req, res) {
 var onGetProjectFileRequest = function (req, res) {
     project.get(req.params[0], req.params[1], function (err, data) {
         if (err) {
-            res.send(500, err);
+            if (err.message === '404' || err.message === '403') {
+                res.send(err.message, err);
+            } else {
+                res.send(500, err);
+            }
+            return;
         }
         res.send(data);
     });
