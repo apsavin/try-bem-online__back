@@ -4,12 +4,13 @@ var express = require('express'),
 
 app.use(express.bodyParser());
 
-app.post('/clone', function (req, res) {
+app.post('/project', function (req, res) {
     project.create(function (err, id) {
         if (err) {
             res.send(500, err);
         }
-        res.send({id: id});
+        //todo: replace with 201
+        res.send(200, {id: id});
     })
 });
 
@@ -27,8 +28,8 @@ var onGetProjectFileRequest = function (req, res) {
     });
 };
 
-app.get(/^\/clones\/([\w-]+)$/, onGetProjectFileRequest);
+app.get(/^\/project\/([\w-]+)$/, onGetProjectFileRequest);
 
-app.get(/^\/clones\/([\w-]+)\/([\w\.\-\/]*)$/, onGetProjectFileRequest);
+app.get(/^\/project\/([\w-]+)\/([\w\.\-\/]*)$/, onGetProjectFileRequest);
 
 app.listen(3001);
