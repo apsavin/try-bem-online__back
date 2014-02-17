@@ -74,7 +74,7 @@ vows.describe('try-bem-online__back').addBatch({
             'should return structure with r, w flags and content field': function (result) {
                 assert.strictEqual(typeof result.structure === 'object', true);
                 assert.strictEqual(result.structure.r, true);
-                assert.strictEqual(result.structure.w, true);
+                assert.strictEqual(result.structure.w, false);
                 assert.strictEqual(Array.isArray(result.structure.content), true);
                 assert.strictEqual(result.structure.content.length, 1);
             },
@@ -107,6 +107,46 @@ vows.describe('try-bem-online__back').addBatch({
                 assert.strictEqual(result.structure.w, true);
                 assert.strictEqual(typeof result.structure.content, 'string');
                 assert(result.structure.content.length);
+            }
+        },
+        'method write, writable path': {
+            topic: function () {
+                var callback = this.callback;
+                project.create(function (err, projectId) {
+                    var path = 'desktop.bundles/index/index.bemjson.js',
+                        content = "({block: 'page', title: 'some title'})";
+                    project.write(projectId, path, content, function (err, structure) {
+                        callback(null, {err: err, structure: structure})
+                    });
+                });
+            },
+
+            'should be ok': function (result) {
+                assert.equal(result.err, null);
+            },
+
+            'should return structure with r, w flags and content field': function (result) {
+                assert.strictEqual(typeof result.structure === 'object', true);
+                assert.strictEqual(result.structure.r, true);
+                assert.strictEqual(result.structure.w, true);
+                assert.strictEqual(typeof result.structure.content, 'string');
+                assert(result.structure.content.length);
+            }
+        },
+        'method write, non-writable path': {
+            topic: function () {
+                var callback = this.callback;
+                project.create(function (err, projectId) {
+                    var path = 'desktop.bundles/.bem/index.bemjson.js',
+                        content = "({block: 'page', title: 'some title'})";
+                    project.write(projectId, path, content, function (err, structure) {
+                        callback(null, {err: err, structure: structure})
+                    });
+                });
+            },
+
+            'should throw': function (result) {
+                assert.notEqual(result.err, null);
             }
         }
     }

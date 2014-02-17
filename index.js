@@ -14,22 +14,43 @@ app.post('/project', function (req, res) {
     })
 });
 
-var onGetProjectFileRequest = function (req, res) {
+/**
+ * @param {Error} err
+ * @param {http.ServerResponse} res
+ * @param {String} projectId
+ * @param {String} path
+ */
+function handleFileError (err, res, projectId, path) {
+    if (err.message === '404' || err.message === '403') {
+        res.send(err.message, projectId + '/' + path);
+    } else {
+        res.send(500, err.message);
+    }
+}
+
+function onGetProjectFileRequest (req, res) {
     project.get(req.params[0], req.params[1], function (err, data) {
         if (err) {
-            if (err.message === '404' || err.message === '403') {
-                res.send(err.message, err);
-            } else {
-                res.send(500, err);
-            }
+            handleFileError(err, res, req.params[0], req.params[1]);
             return;
         }
         res.send(data);
     });
-};
+}
 
 app.get(/^\/project\/([\w-]+)$/, onGetProjectFileRequest);
 
-app.get(/^\/project\/([\w-]+)\/([\w\.\-\/]*)$/, onGetProjectFileRequest);
+var projectFilePathRegExp = /^\/project\/([\w-]+)\/([\w\.\-\/]*)$/;
+
+app.get(projectFilePathRegExp, onGetProjectFileRequest);
+app.put(projectFilePathRegExp, function (req, res) {
+    project.write(req.param[0], req.param[1], req.body, function (err, data) {
+        if (err) {
+            handleFileError(err, res, req.param[0], req.param[1]);
+            return;
+        }
+        res.send(data);
+    });
+});
 
 app.listen(3001);
