@@ -43,8 +43,8 @@ app.get(/^\/project\/([\w-]+)$/, onGetProjectFileRequest);
 var projectFilePathRegExp = /^\/project\/([\w-]+)\/([\w\.\-\/]*)$/;
 
 app.get(projectFilePathRegExp, onGetProjectFileRequest);
-app.put(projectFilePathRegExp, function (req, res) {
-    project.write(req.param[0], req.param[1], req.body, function (err, data) {
+app.post(projectFilePathRegExp, function (req, res) {
+    project.write(req.params[0], req.params[1], req.body, function (err, data) {
         if (err) {
             handleFileError(err, res, req.param[0], req.param[1]);
             return;
