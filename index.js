@@ -30,9 +30,11 @@ function handleFileError (err, res, projectId, path) {
 }
 
 function onGetProjectFileRequest (req, res) {
-    project.get(req.params[0], req.params[1], function (err, data) {
+    var projectId = req.params[0],
+        path = req.params[1];
+    project.get(projectId, path, function (err, data) {
         if (err) {
-            handleFileError(err, res, req.params[0], req.params[1]);
+            handleFileError(err, res, projectId, path);
             return;
         }
         res.send(data);
@@ -44,15 +46,20 @@ var projectRegExp = /^\/project\/([\w-]+)$/,
 
 app.get(projectRegExp, onGetProjectFileRequest);
 app.post(projectRegExp, function (req, res) {
+    var projectId = req.params[0],
+        callback = function (err, id) {
+            if (err) {
+                handleFileError(err, res, projectId);
+                return;
+            }
+            res.send(200, {id: id});
+        };
     switch (req.param('action')) {
         case 'build':
-            project.build(req.params[0], function (err, id) {
-                if (err) {
-                    handleFileError(err, res, req.params[0]);
-                    return;
-                }
-                res.send(200, {id: id});
-            });
+            project.build(projectId, callback);
+            break;
+        case 'clean':
+            project.clean(projectId, callback);
             break;
         default :
             res.send(400, 'No such action');
