@@ -148,6 +148,25 @@ vows.describe('try-bem-online__back').addBatch({
             'should throw': function (result) {
                 assert.notEqual(result.err, null);
             }
+        },
+        'method build': {
+            topic: function () {
+                var callback = this.callback;
+                project.create(function (err, projectId) {
+                    project.build(projectId, function (err, projectId) {
+                        callback(null, {err: err, projectId: projectId})
+                    });
+                });
+            },
+
+            'should be ok': function (result) {
+                assert.equal(result.err, null);
+            },
+
+            'should return projectId': function (result) {
+                assert.strictEqual(typeof result.projectId === 'string', true);
+                assert(result.projectId.length);
+            }
         }
     }
 }).export(module);
