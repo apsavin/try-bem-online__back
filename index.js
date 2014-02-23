@@ -1,5 +1,6 @@
 var express = require('express'),
     project = require('./lib/project'),
+    bemConfig = require('./config/bem'),
     app = express();
 
 app.use(express.bodyParser());
@@ -69,12 +70,33 @@ app.post(projectRegExp, function (req, res) {
 
 app.get(projectResourceRegExp, onGetProjectFileRequest);
 app.post(projectResourceRegExp, function (req, res) {
-    project.write(req.params[0], req.params[1], req.body, function (err, data) {
+    project.write(req.params[0], req.params[1], req.body.content, function (err, data) {
         if (err) {
             handleFileError(err, res, req.param[0], req.param[1]);
             return;
         }
         res.send(data);
+    });
+});
+
+app.get('/techs', function (req, res) {
+    res.send(200, bemConfig.availableTechs);
+});
+
+app.post('/block', function (req, res) {
+    var params = {};
+    ['block', 'elem', 'modName', 'modVal', 'tech'].forEach(function (param) {
+        params[param] = req.param(param);
+    });
+    project.createBemEntity(req.param('projectId'), params, function (err, data) {
+        if (err) {
+            if (err.message === '400') {
+                res.send(err.message, 'Wrong arguments');
+            }
+            res.send(500, err.message);
+            return;
+        }
+        res.send(200, data);
     });
 });
 

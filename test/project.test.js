@@ -3,7 +3,7 @@ var vows = require('vows'),
     project = require('../lib/project'),
     fs = require('fs'),
     path = require('path'),
-    config = require('../lib/configurator').process(require('../config/config'));
+    config = require('../lib/appPathsResolver').process(require('../config/appPaths'));
 
 vows.describe('try-bem-online__back').addBatch({
     'module project': {
