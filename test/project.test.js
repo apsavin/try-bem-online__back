@@ -123,6 +123,32 @@ vows.describe('try-bem-online__back').addBatch({
                             assert.strictEqual(typeof projectId === 'string', true);
                             assert(projectId.length);
                         }
+                    },
+                    'method build during clean': {
+                        topic: function (projectId) {
+                            var callback = this.callback;
+                            project.build(projectId, function (err) {
+                                callback(null, err);
+                            });
+                        },
+
+                        'should throw': function (err) {
+                            assert.strictEqual(err instanceof Error, true);
+                            assert.strictEqual(err.message, 'Can not build project: busy with different process.');
+                        }
+                    }
+                },
+                'method clean during build': {
+                    topic: function (projectId) {
+                        var callback = this.callback;
+                        project.clean(projectId, function (err) {
+                            callback(null, err);
+                        });
+                    },
+
+                    'should throw': function (err) {
+                        assert.strictEqual(err instanceof Error, true);
+                        assert.strictEqual(err.message, 'Can not clean project: busy with different process.');
                     }
                 }
             }
