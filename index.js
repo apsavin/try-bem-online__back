@@ -85,7 +85,7 @@ app.get('/techs', function (req, res) {
 
 app.post('/block', function (req, res) {
     var params = {};
-    ['block', 'elem', 'modName', 'modVal', 'tech'].forEach(function (param) {
+    bemConfig.declKeys.forEach(function (param) {
         params[param] = req.param(param);
     });
     project.createBemEntity(req.param('projectId'), params, function (err, data) {
