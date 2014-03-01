@@ -119,36 +119,26 @@ vows.describe('try-bem-online__back').addBatch({
                             project.clean(projectId, this.callback);
                         },
 
-                        'should return projectId': function (projectId) {
+                        'should return projectId (and queue number)': function (err, projectId, queueNumber) {
                             assert.strictEqual(typeof projectId === 'string', true);
                             assert(projectId.length);
+                            if (typeof queueNumber === 'number') {
+                                assert.strictEqual(queueNumber, 0);
+                            }
                         }
                     },
-                    'method build during clean': {
+                    'method build': {
                         topic: function (projectId) {
-                            var callback = this.callback;
-                            project.build(projectId, function (err) {
-                                callback(null, err);
-                            });
+                            project.build(projectId, this.callback);
                         },
 
-                        'should throw': function (err) {
-                            assert.strictEqual(err instanceof Error, true);
-                            assert.strictEqual(err.message, 'Can not build project: busy with different process.');
+                        'should return projectId (and queue number)': function (err, projectId, queueNumber) {
+                            assert.strictEqual(typeof projectId === 'string', true);
+                            assert(projectId.length);
+                            if (typeof queueNumber === 'number') {
+                                assert.strictEqual(queueNumber, 0);
+                            }
                         }
-                    }
-                },
-                'method clean during build': {
-                    topic: function (projectId) {
-                        var callback = this.callback;
-                        project.clean(projectId, function (err) {
-                            callback(null, err);
-                        });
-                    },
-
-                    'should throw': function (err) {
-                        assert.strictEqual(err instanceof Error, true);
-                        assert.strictEqual(err.message, 'Can not clean project: busy with different process.');
                     }
                 }
             }

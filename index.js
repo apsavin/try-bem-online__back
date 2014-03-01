@@ -48,12 +48,15 @@ var projectRegExp = /^\/project\/([\w-]+)$/,
 app.get(projectRegExp, onGetProjectFileRequest);
 app.post(projectRegExp, function (req, res) {
     var projectId = req.params[0],
-        callback = function (err, id) {
+        callback = function (err, id, queueNumber) {
             if (err) {
                 handleFileError(err, res, projectId);
                 return;
             }
-            res.send(200, {id: id});
+            res.send(200, {
+                id: id,
+                queue: queueNumber
+            });
         };
     switch (req.param('action')) {
         case 'build':
@@ -61,6 +64,9 @@ app.post(projectRegExp, function (req, res) {
             break;
         case 'clean':
             project.clean(projectId, callback);
+            break;
+        case 'status':
+            project.status(projectId, req.param('method'), callback);
             break;
         default :
             res.send(400, 'No such action');
