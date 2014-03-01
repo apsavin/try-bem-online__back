@@ -26,6 +26,7 @@ function handleFileError (err, res, projectId, path) {
         var response = path ? projectId + '/' + path : projectId;
         res.send(err.message, response);
     } else {
+        console.log(err);
         res.send(500, err.message);
     }
 }
@@ -98,8 +99,10 @@ app.post('/block', function (req, res) {
         if (err) {
             if (err.message === '400') {
                 res.send(err.message, 'Wrong arguments');
+            } else {
+                console.log(err);
+                res.send(500, err.message);
             }
-            res.send(500, err.message);
             return;
         }
         res.send(200, data);
