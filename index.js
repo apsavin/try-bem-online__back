@@ -67,7 +67,7 @@ app.post(projectRegExp, function (req, res) {
             project.clean(projectId, callback);
             break;
         case 'status':
-            project.status(projectId, req.param('method'), callback);
+            project.status(projectId, req.param('method'), parseInt(req.param('queue')), callback);
             break;
         default :
             res.send(400, 'No such action');
