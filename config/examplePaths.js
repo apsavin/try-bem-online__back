@@ -1,13 +1,16 @@
 module.exports = {
-    excluded: [
-        '.git',
-        '.gitignore',
-        '.idea',
-        'README.md',
-        'favicon.ico'
+    copied: [
+        '.bem/configs',
+        '.bem/levels',
+        '.bem/techs',
+        '.bem/level.js',
+        '.bem/make.js',
+        '.bem/repo.db.js',
+        'desktop.blocks',
+        'desktop.bundles',
+        'package.json'
     ],
     symlinked: [
-        '.bem',
         'libs',
         'node_modules'
     ],
