@@ -2,17 +2,41 @@ var express = require('express'),
     project = require('./lib/project'),
     bemConfig = require('./config/bem'),
     handleErrors = require('./lib/error').handleErrors,
+    projectRegExp = /^\/project\/([\w-]+)$/,
+    projectResourceRegExp = /^\/project\/([\w-]+)\/([\w\.\-\/]*)$/,
     app = express();
+
+//middleware
 
 app.use(express.bodyParser());
 
-app.post('/project', function (req, res) {
+//routes
+
+app.post('/project', createProject);
+app.get(projectRegExp, getProjectFile);
+app.get(projectResourceRegExp, getProjectFile);
+app.post(projectRegExp, handleProjectAction);
+app.post(projectResourceRegExp, writeProjectFile);
+app.get('/techs', getTechs);
+app.post('/block', createBemEntity);
+
+//routes definitions
+
+/**
+ * @param {Request} req
+ * @param {Response} res
+ */
+function createProject (req, res) {
     project.create(handleErrors(res, function (id) {
         res.send(201, {id: id});
     }));
-});
+}
 
-function onGetProjectFileRequest (req, res) {
+/**
+ * @param {Request} req
+ * @param {Response} res
+ */
+function getProjectFile (req, res) {
     var projectId = req.params[0],
         path = req.params[1];
     project.get(projectId, path, handleErrors(res, function (data) {
@@ -20,11 +44,11 @@ function onGetProjectFileRequest (req, res) {
     }));
 }
 
-var projectRegExp = /^\/project\/([\w-]+)$/,
-    projectResourceRegExp = /^\/project\/([\w-]+)\/([\w\.\-\/]*)$/;
-
-app.get(projectRegExp, onGetProjectFileRequest);
-app.post(projectRegExp, function (req, res) {
+/**
+ * @param {Request} req
+ * @param {Response} res
+ */
+function handleProjectAction (req, res) {
     var projectId = req.params[0],
         callback = handleErrors(res, function (id, queueNumber) {
             res.send({
@@ -45,21 +69,31 @@ app.post(projectRegExp, function (req, res) {
         default :
             res.send(400, 'No such action: ' + req.param('action'));
     }
-});
+}
 
-
-app.get(projectResourceRegExp, onGetProjectFileRequest);
-app.post(projectResourceRegExp, function (req, res) {
+/**
+ * @param {Request} req
+ * @param {Response} res
+ */
+function writeProjectFile (req, res) {
     project.write(req.params[0], req.params[1], req.body.content, handleErrors(res, function (data) {
         res.send(data);
     }));
-});
+}
 
-app.get('/techs', function (req, res) {
+/**
+ * @param {Request} req
+ * @param {Response} res
+ */
+function getTechs (req, res) {
     res.send(bemConfig.availableTechs);
-});
+}
 
-app.post('/block', function (req, res) {
+/**
+ * @param {Request} req
+ * @param {Response} res
+ */
+function createBemEntity (req, res) {
     var params = {};
     bemConfig.declKeys.forEach(function (param) {
         params[param] = req.param(param);
@@ -67,6 +101,6 @@ app.post('/block', function (req, res) {
     project.createBemEntity(req.param('projectId'), params, handleErrors(res, function (data) {
         res.send(data);
     }));
-});
+}
 
 app.listen(3001);
