@@ -4,6 +4,7 @@ var express = require('express'),
     handleErrors = require('./lib/error').handleErrors,
     projectRegExp = /^\/project\/([\w-]+)$/,
     projectResourceRegExp = /^\/project\/([\w-]+)\/([\w\.\-\/]*)$/,
+    PROJECT_TTL = 3,//hours
     app = express();
 
 //middleware
@@ -13,6 +14,7 @@ app.use(express.bodyParser());
 //routes
 
 app.post('/project', createProject);
+app.delete('/old_projects', deleteOldProjects);
 app.get(projectRegExp, getProjectFile);
 app.get(projectResourceRegExp, getProjectFile);
 app.post(projectRegExp, handleProjectAction);
@@ -29,6 +31,18 @@ app.post('/block', createBemEntity);
 function createProject (req, res) {
     project.create(handleErrors(res, function (id) {
         res.send(201, {id: id});
+    }));
+}
+
+/**
+ * @param {Request} req
+ * @param {Response} res
+ */
+function deleteOldProjects (req, res) {
+    var removeDate = new Date();
+    removeDate.setHours(removeDate.getHours() - PROJECT_TTL);
+    project.removeOld(removeDate, handleErrors(res, function () {
+        res.send(200);
     }));
 }
 
