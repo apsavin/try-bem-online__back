@@ -4,6 +4,7 @@ var express = require('express'),
     handleErrors = require('./lib/error').handleErrors,
     projectRegExp = /^\/project\/([\w-]+)$/,
     projectResourceRegExp = /^\/project\/([\w-]+)\/([\w\.\-\/]*)$/,
+    projectWithCache = require('./lib/projectWithCache'),
     PROJECT_TTL = 3,//hours
     app = express();
 
@@ -41,7 +42,7 @@ function createProject (req, res) {
 function deleteOldProjects (req, res) {
     var removeDate = new Date();
     removeDate.setHours(removeDate.getHours() - PROJECT_TTL);
-    project.removeOld(removeDate, handleErrors(res, function () {
+    projectWithCache.removeOld(removeDate, handleErrors(res, function () {
         res.send(200);
     }));
 }
@@ -53,7 +54,7 @@ function deleteOldProjects (req, res) {
 function getProjectFile (req, res) {
     var projectId = req.params[0],
         path = req.params[1];
-    project.get(projectId, path, handleErrors(res, function (data) {
+    projectWithCache.get(projectId, path, handleErrors(res, function (data) {
         res.send(data);
     }));
 }
@@ -70,19 +71,25 @@ function handleProjectAction (req, res) {
                 queue: queueNumber
             });
         });
-    switch (req.param('action')) {
-        case 'build':
-            project.build(projectId, callback);
-            break;
-        case 'clean':
-            project.clean(projectId, callback);
-            break;
-        case 'status':
-            project.status(projectId, req.param('method'), parseInt(req.param('queue')), callback);
-            break;
-        default :
-            res.send(400, 'No such action: ' + req.param('action'));
-    }
+    projectWithCache.exists(projectId, function (exists) {
+        if (exists) {
+            switch (req.param('action')) {
+                case 'build':
+                    project.build(projectId, callback);
+                    break;
+                case 'clean':
+                    project.clean(projectId, callback);
+                    break;
+                case 'status':
+                    project.status(projectId, req.param('method'), parseInt(req.param('queue')), callback);
+                    break;
+                default :
+                    res.send(400, 'No such action: ' + req.param('action'));
+            }
+        } else {
+            res.send(404, 'No such project: ' + projectId);
+        }
+    });
 }
 
 /**
@@ -90,9 +97,16 @@ function handleProjectAction (req, res) {
  * @param {Response} res
  */
 function writeProjectFile (req, res) {
-    project.write(req.params[0], req.params[1], req.body.content, handleErrors(res, function (data) {
-        res.send(data);
-    }));
+    var projectId = req.params[0];
+    projectWithCache.exists(projectId, function (exists) {
+        if (exists) {
+            project.write(projectId, req.params[1], req.body.content, handleErrors(res, function (data) {
+                res.send(data);
+            }));
+        } else {
+            res.send(404, 'No such project: ' + projectId);
+        }
+    });
 }
 
 /**
@@ -112,9 +126,16 @@ function createBemEntity (req, res) {
     bemConfig.declKeys.forEach(function (param) {
         params[param] = req.param(param);
     });
-    project.createBemEntity(req.param('projectId'), params, handleErrors(res, function (data) {
-        res.send(data);
-    }));
+    var projectId = req.param('projectId');
+    projectWithCache.exists(projectId, function (exists) {
+        if (exists) {
+            project.createBemEntity(projectId, params, handleErrors(res, function (data) {
+                res.send(data);
+            }));
+        } else {
+            res.send(404, 'No such project: ' + projectId);
+        }
+    });
 }
 
 app.listen(3001);
