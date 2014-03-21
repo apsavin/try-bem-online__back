@@ -71,25 +71,24 @@ function handleProjectAction (req, res) {
                 queue: queueNumber
             });
         });
-    projectWithCache.exists(projectId, function (exists) {
-        if (exists) {
-            switch (req.param('action')) {
-                case 'build':
-                    project.build(projectId, callback);
-                    break;
-                case 'clean':
-                    project.clean(projectId, callback);
-                    break;
-                case 'status':
-                    project.status(projectId, req.param('method'), parseInt(req.param('queue')), callback);
-                    break;
-                default :
-                    res.send(400, 'No such action: ' + req.param('action'));
+
+    switch (req.param('action')) {
+        case 'build':
+            projectWithCache.build(projectId, callback);
+            break;
+        case 'clean':
+            projectWithCache.clean(projectId, callback);
+            break;
+        case 'status':
+            var queue = parseInt(req.param('queue'));
+            if (isNaN(queue)) {
+                res.send(400, 'Bad queue number');
             }
-        } else {
-            res.send(404, 'No such project: ' + projectId);
-        }
-    });
+            projectWithCache.status(projectId, req.param('method'), queue, callback);
+            break;
+        default :
+            res.send(400, 'No such action: ' + req.param('action'));
+    }
 }
 
 /**
@@ -97,16 +96,9 @@ function handleProjectAction (req, res) {
  * @param {Response} res
  */
 function writeProjectFile (req, res) {
-    var projectId = req.params[0];
-    projectWithCache.exists(projectId, function (exists) {
-        if (exists) {
-            project.write(projectId, req.params[1], req.body.content, handleErrors(res, function (data) {
-                res.send(data);
-            }));
-        } else {
-            res.send(404, 'No such project: ' + projectId);
-        }
-    });
+    projectWithCache.write(req.params[0], req.params[1], req.body.content, handleErrors(res, function (data) {
+        res.send(data);
+    }));
 }
 
 /**
@@ -126,16 +118,10 @@ function createBemEntity (req, res) {
     bemConfig.declKeys.forEach(function (param) {
         params[param] = req.param(param);
     });
-    var projectId = req.param('projectId');
-    projectWithCache.exists(projectId, function (exists) {
-        if (exists) {
-            project.createBemEntity(projectId, params, handleErrors(res, function (data) {
-                res.send(data);
-            }));
-        } else {
-            res.send(404, 'No such project: ' + projectId);
-        }
-    });
+
+    projectWithCache.createBemEntity(req.param('projectId'), params, handleErrors(res, function (data) {
+        res.send(data);
+    }));
 }
 
 app.listen(3001);
