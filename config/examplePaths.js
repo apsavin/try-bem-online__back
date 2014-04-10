@@ -1,11 +1,9 @@
 module.exports = {
     copied: [
-        '.bem/configs',
         '.bem/levels',
         '.bem/techs',
         '.bem/level.js',
         '.bem/make.js',
-        '.bem/repo.db.js',
         'desktop.blocks',
         'desktop.bundles',
         'package.json'
